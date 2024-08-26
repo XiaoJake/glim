@@ -2,14 +2,16 @@ cmake_minimum_required(VERSION 3.16)
 project(glim VERSION 1.0.4 LANGUAGES CXX)
 
 add_compile_options(-std=c++17)
+add_definitions(-fPIC)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake")
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build." FORCE)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-option(BUILD_WITH_CUDA "Build with GPU support" ON)
+option(BUILD_WITH_CUDA "Build with GPU support" OFF)
 option(BUILD_WITH_CUDA_MULTIARCH "Build with GPU cross-platform support" OFF)
 option(BUILD_WITH_VIEWER "Build with visualizer" ON)
 option(BUILD_WITH_MARCH_NATIVE "Build with -march=native" OFF)
@@ -97,7 +99,7 @@ target_link_libraries(glim
   GTSAM::GTSAM
   gtsam_points::gtsam_points
   OpenMP::OpenMP_CXX
-  spdlog::spdlog
+  spdlog::spdlog_header_only
   $<TARGET_NAME_IF_EXISTS:Iridescence::Iridescence>
   ${OpenCV_LIBRARIES}
 )
@@ -230,7 +232,7 @@ if(DEFINED ENV{ROS_VERSION})
     find_package(ament_cmake REQUIRED)
     install(DIRECTORY config DESTINATION share/glim)
     ament_export_include_directories(include ${EIGEN3_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})
-    ament_export_libraries(${glim_LIBRARIES} ${GTSAM_LIBRARIES} fmt spdlog::spdlog)
+    ament_export_libraries(${glim_LIBRARIES} ${GTSAM_LIBRARIES} fmt spdlog::spdlog_header_only)
     ament_export_interfaces(glim-targets HAS_LIBRARY_TARGET)
     ament_package(CONFIG_EXTRAS "cmake/glim-config.cmake.in")
   elseif($ENV{ROS_VERSION} EQUAL 1)
@@ -238,7 +240,7 @@ if(DEFINED ENV{ROS_VERSION})
     find_package(catkin REQUIRED)
     catkin_package(
       INCLUDE_DIRS include
-      LIBRARIES ${glim_LIBRARIES} ${GTSAM_LIBRARIES} fmt spdlog::spdlog
+      LIBRARIES ${glim_LIBRARIES} ${GTSAM_LIBRARIES} fmt spdlog::spdlog_header_only
     )
     install(DIRECTORY config DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
   endif()
