@@ -73,14 +73,27 @@ private:
   std::pair<double, double> last_point_stamps;
   Eigen::Vector3d last_imu_vel;
   Eigen::Matrix<double, 6, 1> last_imu_bias;
+  double last_median_distance;
+  std::vector<double> last_voxel_resolutions;
 
   using FactorLine = std::tuple<Eigen::Vector3f, Eigen::Vector3f, Eigen::Vector4f, Eigen::Vector4f>;
   using FactorLineGetter = std::function<std::optional<FactorLine>(const gtsam::NonlinearFactor*)>;
   std::vector<std::pair<boost::weak_ptr<gtsam::NonlinearFactor>, FactorLineGetter>> odometry_factor_lines;
   std::unordered_map<std::uint64_t, Eigen::Isometry3f> odometry_poses;
 
+  bool show_mapping_tools;
+  float min_overlap;
+
+  double point_size;
+  bool point_size_metric;
+  bool point_shape_circle;
+
+  int z_range_mode;
   Eigen::Vector2f z_range;
   Eigen::Vector2f auto_z_range;
+  double last_submap_z;
+  double points_alpha;
+  double factors_alpha;
 
   std::unique_ptr<TrajectoryManager> trajectory;
   std::vector<Eigen::Isometry3f> submap_keyframes;

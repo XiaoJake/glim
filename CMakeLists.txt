@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(glim VERSION 1.0.4 LANGUAGES CXX)
+project(glim VERSION 1.0.7 LANGUAGES CXX)
 
 add_compile_options(-std=c++17)
 add_definitions(-fPIC)
@@ -41,8 +41,12 @@ endif()
 
 # GPU-related
 if(BUILD_WITH_CUDA)
-  add_definitions(-DBUILD_GTSAM_POINTS_GPU)
-  set(GPU_SRCS src/glim/odometry/odometry_estimation_gpu.cpp)
+  if(NOT GTSAM_POINTS_USE_CUDA)
+    message(WARNING "gtsam_points is not built with CUDA!!")
+    set(BUILD_WITH_CUDA OFF CACHE BOOL "gtsam_points is not built with CUDA" FORCE)
+  else()
+    set(GPU_SRCS src/glim/odometry/odometry_estimation_gpu.cpp)
+  endif()
 endif()
 
 add_library(glim SHARED

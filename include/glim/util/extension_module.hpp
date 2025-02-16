@@ -23,11 +23,22 @@ public:
   virtual bool ok() const { return true; }
 
   /**
+   * @brief Called when the system is quitting.
+   */
+  virtual void at_exit(const std::string& dump_path) {}
+
+  /**
    * @brief Load an extension module from a dynamic library
    * @param so_name  Dynamic library name
    * @return         Loaded extension module
    */
   static std::shared_ptr<ExtensionModule> load_module(const std::string& so_name);
+
+  /**
+   * @brief Export classes (factors) from a dynamic library
+   * @param so_name  Dynamic library name
+   */
+  static void export_classes(const std::string& so_name);
 };
 
 }  // namespace glim

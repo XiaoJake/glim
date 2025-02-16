@@ -178,6 +178,9 @@ EstimationFrame::ConstPtr OdometryEstimationIMU::insert_frame(const Preprocessed
     covariance_estimation->estimate(points_imu, raw_frame->neighbors, normals, covs);
 
     auto frame = std::make_shared<gtsam_points::PointCloudCPU>(points_imu);
+    if (raw_frame->intensities.size()) {
+      frame->add_intensities(raw_frame->intensities);
+    }
     frame->add_covs(covs);
     frame->add_normals(normals);
     new_frame->frame = frame;
@@ -217,7 +220,8 @@ EstimationFrame::ConstPtr OdometryEstimationIMU::insert_frame(const Preprocessed
   gtsam::FixedLagSmootherKeyTimestampMap new_stamps;
 
   const double last_stamp = frames[last]->stamp;
-  const auto last_T_world_imu = smoother->calculateEstimate<gtsam::Pose3>(X(last));
+  const auto last_T_world_imu_ = smoother->calculateEstimate<gtsam::Pose3>(X(last));
+  const auto last_T_world_imu = gtsam::Pose3(last_T_world_imu_.rotation().normalized(), last_T_world_imu_.translation());
   const auto last_v_world_imu = smoother->calculateEstimate<gtsam::Vector3>(V(last));
   const auto last_imu_bias = smoother->calculateEstimate<gtsam::imuBias::ConstantBias>(B(last));
   const gtsam::NavState last_nav_world_imu(last_T_world_imu, last_v_world_imu);
@@ -297,6 +301,9 @@ EstimationFrame::ConstPtr OdometryEstimationIMU::insert_frame(const Preprocessed
   covariance_estimation->estimate(deskewed, raw_frame->neighbors, deskewed_normals, deskewed_covs);
 
   auto frame = std::make_shared<gtsam_points::PointCloudCPU>(deskewed);
+  if (raw_frame->intensities.size()) {
+    frame->add_intensities(raw_frame->intensities);
+  }
   frame->add_covs(deskewed_covs);
   frame->add_normals(deskewed_normals);
   new_frame->frame = frame;
@@ -330,6 +337,7 @@ EstimationFrame::ConstPtr OdometryEstimationIMU::insert_frame(const Preprocessed
   update_frames(current, new_factors);
 
   std::vector<EstimationFrame::ConstPtr> active_frames(frames.begin() + marginalized_cursor, frames.end());
+  Callbacks::on_update_new_frame(active_frames.back());
   Callbacks::on_update_frames(active_frames);
   logger->trace("frames updated");
 
